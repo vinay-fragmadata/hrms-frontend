@@ -4,11 +4,14 @@ import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import { memo, useMemo, useCallback } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { logout, selectAuthUser } from '@/store/slices/authSlice'
-import { SIDEBAR_WIDTH, SidebarNav } from '@/components/layout/SidebarNav'
+import {
+  getSidebarWidth,
+  SidebarNav,
+} from '@/components/layout/SidebarNav'
 
 const pathTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -22,6 +25,13 @@ export const MainLayout = memo(function MainLayout() {
   const location = useLocation()
   const user = useAppSelector(selectAuthUser)
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const sidebarWidth = getSidebarWidth(sidebarCollapsed)
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed((c) => !c)
+  }, [])
+
   const pageTitle = useMemo(
     () => pathTitles[location.pathname] ?? 'HRMS',
     [location.pathname],
@@ -34,7 +44,7 @@ export const MainLayout = memo(function MainLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <SidebarNav />
+      <SidebarNav collapsed={sidebarCollapsed} onToggleCollapse={toggleSidebar} />
       <Box
         component="section"
         sx={{
@@ -42,16 +52,18 @@ export const MainLayout = memo(function MainLayout() {
           display: 'flex',
           flexDirection: 'column',
           minWidth: 0,
-          width: { sm: `calc(100% - ${SIDEBAR_WIDTH}px)` },
+          width: {
+            xs: `calc(100% - ${sidebarWidth}px)`,
+            sm: `calc(100% - ${sidebarWidth}px)`,
+          },
+          transition: (theme) =>
+            theme.transitions.create(['width', 'margin'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
         }}
       >
-        <AppBar
-          position="sticky"
-          sx={{
-            width: '100%',
-            ml: 0,
-          }}
-        >
+        <AppBar position="sticky" sx={{ width: '100%', ml: 0 }}>
           <Toolbar sx={{ gap: 2, minHeight: { xs: 64, sm: 70 } }}>
             <Typography
               variant="h5"

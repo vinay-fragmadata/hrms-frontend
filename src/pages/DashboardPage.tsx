@@ -1,53 +1,32 @@
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Stack from '@mui/material/Stack'
+import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import { memo, useMemo } from 'react'
+import { memo } from 'react'
 
+/**
+ * Placeholder for analytics, KPIs, and charts. Employee directory lives on Employees.
+ */
 const DashboardPage = memo(function DashboardPage() {
-  const cards = useMemo(
-    () => [
-      {
-        title: 'Employees',
-        body: 'Directory, org chart, and profiles will live here.',
-      },
-      {
-        title: 'Time & attendance',
-        body: 'Clock in, leave requests, and approvals — connect via RTK Query.',
-      },
-      {
-        title: 'Payroll',
-        body: 'Compensation runs and payslips — wire to your API endpoints.',
-      },
-    ],
-    [],
-  )
-
   return (
-    <Stack spacing={2}>
-      <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 0 }}>
-        Overview of your HR workspace. Use the sidebar to open Employees or Timesheet.
+    <Box
+      sx={{
+        minHeight: 320,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 2,
+        border: 1,
+        borderColor: 'divider',
+        borderStyle: 'dashed',
+        bgcolor: 'background.paper',
+        px: 3,
+        py: 6,
+      }}
+    >
+      <Typography variant="body1" color="text.secondary" textAlign="center">
+        Analytics and graphs will be added here. Use the sidebar to open{' '}
+        <strong>Employees</strong> for the directory.
       </Typography>
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={2}
-        useFlexGap
-        flexWrap="wrap"
-      >
-        {cards.map((c) => (
-          <Card key={c.title} sx={{ flex: '1 1 240px', minWidth: 220 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                {c.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {c.body}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Stack>
-    </Stack>
+    </Box>
   )
 })
 

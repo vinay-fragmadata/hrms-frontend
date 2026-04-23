@@ -8,8 +8,7 @@ export interface Employee {
   role: string
 }
 
-/** Body for POST /employees and PATCH /employees/:id */
-export interface EmployeeFormPayload {
+export interface CreateEmployeeRequest {
   firstName: string
   lastName: string
   email: string
@@ -18,15 +17,15 @@ export interface EmployeeFormPayload {
   role: string
 }
 
-export interface EmployeesListResponse {
-  success: boolean
+export interface BackendEmployeesListResponse {
+  success: true
   data: {
     employees: Employee[]
   }
 }
 
-export interface EmployeeSingleResponse {
-  success: boolean
+export interface BackendEmployeeCreateResponse {
+  success: true
   message: string
   data: {
     employee: Employee

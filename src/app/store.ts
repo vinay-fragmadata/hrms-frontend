@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { authListenerMiddleware } from '@/app/authListener'
 import { baseApi } from '@/store/api/baseApi'
 import '@/store/api/authApi'
-import '@/store/api/employeesApi'
+import '@/store/api/employeeApi'
 import '@/store/api/timesheetApi'
 import authReducer from '@/store/slices/authSlice'
 

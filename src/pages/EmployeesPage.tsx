@@ -1,257 +1,120 @@
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
-import Paper from '@mui/material/Paper'
-import Snackbar from '@mui/material/Snackbar'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
-import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import AddIcon from '@mui/icons-material/Add'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
-import { memo, useCallback, useMemo, useState } from 'react'
-import { AddUpdateEmployee } from '@/components/employees/AddUpdateEmployee'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import {
-  useDeleteEmployeeMutation,
-  useGetEmployeesQuery,
-} from '@/store/api/employeesApi'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { AddEditEmployee } from '@/components/employee/AddEditEmployee'
+import { useGetEmployeesQuery } from '@/store/api/employeeApi'
 import type { Employee } from '@/types/employee'
 import { parseRtkQueryErrorMessage } from '@/utils/rtkErrorMessage'
 
 const EmployeesPage = memo(function EmployeesPage() {
-  const { data: employees = [], isLoading, isError, error, refetch } =
-    useGetEmployeesQuery()
-  const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation()
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const { data, isLoading, isError, error } = useGetEmployeesQuery()
 
-  const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null)
-  const [employeeDrawer, setEmployeeDrawer] = useState<{
-    open: boolean
-    employee: Employee | null
-  }>({ open: false, employee: null })
-
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error'
-  }>({ open: false, message: '', severity: 'success' })
-
-  const listError = useMemo(() => {
-    if (!isError) return null
-    return parseRtkQueryErrorMessage(error) ?? 'Could not load employees.'
-  }, [isError, error])
-
-  const closeDeleteDialog = useCallback(() => {
-    if (!isDeleting) setDeleteTarget(null)
-  }, [isDeleting])
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (!deleteTarget) return
-    try {
-      const result = await deleteEmployee(deleteTarget.id).unwrap()
-      setDeleteTarget(null)
-      setSnackbar({
-        open: true,
-        message: result.message,
-        severity: 'success',
-      })
-    } catch (e) {
-      setSnackbar({
-        open: true,
-        message: parseRtkQueryErrorMessage(e) ?? 'Delete failed.',
-        severity: 'error',
-      })
+  useEffect(() => {
+    if (data) {
+      setEmployees(data)
     }
-  }, [deleteEmployee, deleteTarget])
+  }, [data])
 
-  const closeSnackbar = useCallback(() => {
-    setSnackbar((s) => ({ ...s, open: false }))
+  const errorMessage = useMemo(() => {
+    if (!isError) return null
+    const parsed = parseRtkQueryErrorMessage(error)
+    if (parsed) return parsed
+    return 'Unable to load employees right now.'
+  }, [error, isError])
+
+  const handleOpenDrawer = useCallback(() => {
+    setIsDrawerOpen(true)
   }, [])
 
-  const openAddEmployee = useCallback(() => {
-    setEmployeeDrawer({ open: true, employee: null })
+  const handleCloseDrawer = useCallback(() => {
+    setIsDrawerOpen(false)
   }, [])
 
-  const openEditEmployee = useCallback((row: Employee) => {
-    setEmployeeDrawer({ open: true, employee: row })
+  const handleEmployeeSaved = useCallback((newEmployee: Employee) => {
+    // Keep UI in sync after save without calling the list endpoint again.
+    setEmployees((prev) => [newEmployee, ...prev])
   }, [])
-
-  const closeEmployeeDrawer = useCallback(() => {
-    setEmployeeDrawer({ open: false, employee: null })
-  }, [])
-
-  const showToast = useCallback(
-    (message: string, severity: 'success' | 'error') => {
-      setSnackbar({ open: true, message, severity })
-    },
-    [],
-  )
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 0 }}>
-        Employee directory — data from the HRMS API.
-      </Typography>
-
-      <Stack direction="row" justifyContent="flex-end">
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={openAddEmployee}
+    <Card>
+      <CardContent>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          spacing={2}
+          sx={{ mb: 2 }}
         >
-          Add Employee
-        </Button>
-      </Stack>
-
-      {listError ? (
-        <Alert severity="error">
-          {listError}
-          <Box component="span" sx={{ display: 'block', mt: 1 }}>
-            <Typography
-              component="button"
-              type="button"
-              variant="body2"
-              onClick={() => refetch()}
-              sx={{
-                border: 0,
-                p: 0,
-                background: 'none',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                color: 'inherit',
-              }}
-            >
-              Retry
+          <Box>
+            <Typography variant="h6">Employees</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Manage staff and basic employee details.
             </Typography>
           </Box>
-        </Alert>
-      ) : null}
+          <Button variant="contained" onClick={handleOpenDrawer}>
+            Add Staff
+          </Button>
+        </Stack>
 
-      <TableContainer component={Paper} elevation={1}>
-        <Table size="medium" aria-label="Employees table">
-          <TableHead>
-            <TableRow>
-              <TableCell width={72}>Sr. no.</TableCell>
-              <TableCell>Full name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Contact</TableCell>
-              <TableCell>Department</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell align="right" width={140}>
-                Actions
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
+        {errorMessage ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errorMessage}
+          </Alert>
+        ) : null}
+
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress size={28} />
+          </Box>
+        ) : employees.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            No employees found.
+          </Typography>
+        ) : (
+          <Table size="small">
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={7}>
-                  <Typography color="text.secondary">Loading employees…</Typography>
-                </TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Department</TableCell>
+                <TableCell>Role</TableCell>
               </TableRow>
-            ) : employees.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <Typography color="text.secondary">No employees found.</Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              employees.map((row, index) => (
-                <TableRow key={row.id} hover>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>
-                    {`${row.firstName} ${row.lastName}`.trim()}
-                  </TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>{row.contactNumber}</TableCell>
-                  <TableCell>{row.department}</TableCell>
-                  <TableCell>{row.role}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Preview (coming soon)">
-                      <span>
-                        <IconButton
-                          size="small"
-                          aria-label="Preview employee"
-                          disabled
-                        >
-                          <VisibilityOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title="Edit employee">
-                      <IconButton
-                        size="small"
-                        aria-label="Edit employee"
-                        onClick={() => openEditEmployee(row)}
-                      >
-                        <EditOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete employee">
-                      <IconButton
-                        size="small"
-                        aria-label="Delete employee"
-                        onClick={() => setDeleteTarget(row)}
-                        color="error"
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+            </TableHead>
+            <TableBody>
+              {employees.map((employee) => (
+                <TableRow key={employee.id}>
+                  <TableCell>{`${employee.firstName} ${employee.lastName}`}</TableCell>
+                  <TableCell>{employee.email}</TableCell>
+                  <TableCell>{employee.contactNumber}</TableCell>
+                  <TableCell>{employee.department}</TableCell>
+                  <TableCell>{employee.role}</TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
 
-      <AddUpdateEmployee
-        open={employeeDrawer.open}
-        employee={employeeDrawer.employee}
-        onClose={closeEmployeeDrawer}
-        onToast={showToast}
+      <AddEditEmployee
+        open={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        onSaved={handleEmployeeSaved}
       />
-
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        title="Delete employee?"
-        description={
-          deleteTarget
-            ? `This will permanently remove ${deleteTarget.firstName} ${deleteTarget.lastName} (${deleteTarget.email}) from the directory.`
-            : ''
-        }
-        cancelLabel="Cancel"
-        confirmLabel="Delete"
-        confirmLoading={isDeleting}
-        onCancel={closeDeleteDialog}
-        onConfirm={handleConfirmDelete}
-      />
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={closeSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={closeSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Stack>
+    </Card>
   )
 })
 

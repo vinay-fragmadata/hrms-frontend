@@ -82,7 +82,8 @@ export const AddEditTimesheet = memo(function AddEditTimesheet({
   useEffect(() => {
     if (!open) return
     if (entry && employees.length > 0) {
-      const emp = employees.find((x) => x.id === entry.employeeId) ?? null
+      const emp =
+        employees.find((x: Employee) => x.id === entry.employeeId) ?? null
       setEmployee(emp)
       setTask(entry.task)
       setDate(entry.date)

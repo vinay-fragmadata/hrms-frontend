@@ -79,6 +79,7 @@ export const LoginForm = memo(function LoginForm() {
           value={email}
           onChange={handleEmailChange}
           disabled={isLoading}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '2px' } }}
         />
         <FormTextField
           label="Password"
@@ -89,6 +90,7 @@ export const LoginForm = memo(function LoginForm() {
           value={password}
           onChange={handlePasswordChange}
           disabled={isLoading}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '2px' } }}
         />
         <Button
           type="submit"
@@ -96,7 +98,7 @@ export const LoginForm = memo(function LoginForm() {
           color="primary"
           size="large"
           disabled={isLoading}
-          sx={{ mt: 1, width: '50%', alignSelf: 'center' }}
+          sx={{ mt: 1, width: '50%', alignSelf: 'center', borderRadius: '2px' }}
         >
           {isLoading ? 'Signing in…' : 'Sign in'}
         </Button>

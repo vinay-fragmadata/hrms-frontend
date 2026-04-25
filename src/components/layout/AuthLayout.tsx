@@ -8,12 +8,14 @@ import { memo, type ReactNode } from 'react'
 export interface AuthLayoutProps {
   title: string
   subtitle?: string
+  background?: string
   children: ReactNode
 }
 
 export const AuthLayout = memo(function AuthLayout({
   title,
   subtitle,
+  background,
   children,
 }: AuthLayoutProps) {
   return (
@@ -25,8 +27,10 @@ export const AuthLayout = memo(function AuthLayout({
       py={4}
       px={2}
       sx={{
-        background: (theme) =>
-          `linear-gradient(160deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 42%, ${theme.palette.secondary.dark} 100%)`,
+        background:
+          background ??
+          ((theme) =>
+            `linear-gradient(160deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 42%, ${theme.palette.secondary.dark} 100%)`),
       }}
     >
       <Container maxWidth="sm">

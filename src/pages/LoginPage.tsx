@@ -17,6 +17,7 @@ const LoginPage = memo(function LoginPage() {
     <AuthLayout
       title="Sign in"
       subtitle="Access your HRMS workspace with your work email."
+      background="#f4f6fb"
     >
       <LoginForm />
       <AuthToggleLink
